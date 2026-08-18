@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyTravaly — Hotel Solutions Ecosystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#FF5A5F;
+    --coral-dark:#E2484D;
+    --navy:#0F172B;
+    --card-light:#F4F7FA;
+    --border:#E2E8F0;
+    --muted:#64748B;
+    --white:#FFFFFF;
+    --pink-badge:#FFEEEF;
+    --step-card:#1C273B;
+    --step-icon:#28364C;
+    --green-bg:#DCFCE7;
+    --green-txt:#047857;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:#0b0e16;
+    color:var(--navy);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #viewport{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px;
+  }
+  #stageWrap{
+    position:relative;
+    flex-shrink:0;
+  }
+  #stage{
+    width:1280px; height:720px;
+    position:relative;
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.45);
+    transform-origin:top left;
+  }
+  .slide{
+    position:absolute; inset:0;
+    padding:44px 56px;
+    display:none;
+    flex-direction:column;
+    background:#fff;
+    opacity:0;
+    transition:opacity .35s ease;
+  }
+  .slide.active{display:flex; opacity:1;}
+  .slide.dark{background:var(--navy); color:#fff;}
+
+  /* ---------- shared header ---------- */
+  .brand{position:absolute; top:36px; right:52px; display:flex; align-items:center; gap:10px;}
+  .brand .mark{width:36px;height:36px;border-radius:9px;background:var(--coral);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .brand .name{font-weight:700; font-size:16px; color:var(--navy);}
+  .brand .name sup{color:var(--coral); font-weight:700; font-size:9px;}
+  .dark .brand .name{color:#fff;}
+
+  .eyebrow{display:flex; align-items:center; gap:8px; color:var(--coral); font-weight:700; font-size:12px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px;}
+  .eyebrow svg{width:16px;height:16px;}
+  h1.title{font-size:28px; font-weight:800; color:var(--navy); letter-spacing:-.01em; margin-bottom:6px;}
+  .dark h1.title{color:#fff;}
+  p.subtitle{color:var(--muted); font-size:13.5px; margin-bottom:18px;}
+  .dark p.subtitle{color:#AAB4C6;}
+  .divider{height:1px; background:var(--border); margin-bottom:22px;}
+  .dark .divider{background:#263049;}
+
+  .slide-counter{position:absolute; bottom:26px; right:52px; font-size:11px; color:#94A3B8;}
+  .dark .slide-counter{color:#8B95A7;}
+
+  /* ---------- nav controls ---------- */
+  #navbar{
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; gap:18px;
+  }
+  .navbtn{
+    width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.3);
+    background:rgba(255,255,255,.1); color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .navbtn:hover{background:rgba(255,255,255,.22); transform:scale(1.06);}
+  .navbtn svg{width:18px;height:18px;}
+  #dots{display:flex; gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.32); cursor:pointer; transition:all .2s ease;}
+  .dot.on{background:var(--coral); width:22px; border-radius:5px;}
+  .hint{flex-shrink:0; text-align:center; font-size:11.5px; color:rgba(255,255,255,.5);}
+
+  /* ---------- buttons ---------- */
+  .btn{border:none; cursor:pointer; font-family:inherit; font-weight:700; border-radius:10px; display:inline-flex; align-items:center; gap:8px; transition:transform .15s ease, box-shadow .15s ease;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-coral{background:var(--coral); color:#fff; box-shadow:0 8px 20px rgba(255,90,95,.35);}
+  .btn-coral:hover{box-shadow:0 10px 26px rgba(255,90,95,.45);}
+  .btn-outline{background:#fff; color:var(--navy); border:1px solid var(--border);}
+  .btn-navy{background:var(--navy); color:#fff;}
+
+  /* ================= SLIDE 1 : COVER ================= */
+  #s1{align-items:center; justify-content:center; text-align:center; background:linear-gradient(160deg,#fbfbfd 0%, #fff 55%, #fff8f7 100%);}
+  #s1 .top-pill{position:absolute; top:44px; right:52px; border:1px solid var(--border); background:#fff; border-radius:22px; padding:9px 18px; font-size:10.5px; font-weight:700; letter-spacing:.06em; color:var(--muted);}
+  #s1 .tag{display:inline-flex; align-items:center; gap:8px; background:var(--pink-badge); color:var(--coral-dark); font-weight:700; font-size:13.5px; padding:10px 22px; border-radius:24px; margin-bottom:26px;}
+  #s1 h1{font-size:52px; font-weight:800; letter-spacing:-.02em; line-height:1.08; color:var(--navy); margin-bottom:22px; max-width:900px;}
+  #s1 .lede{font-size:16.5px; color:var(--muted); max-width:640px; margin-bottom:34px; line-height:1.5;}
+  #s1 .capsule{display:inline-flex; align-items:center; background:#fff; border:1px solid var(--border); border-radius:32px; padding:14px 8px; gap:0; margin-bottom:30px;}
+  #s1 .capsule span{display:flex; align-items:center; gap:8px; font-weight:700; font-size:13.5px; padding:0 26px; position:relative;}
+  #s1 .capsule span::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--coral);}
+  #s1 .capsule span:not(:last-child)::after{content:''; position:absolute; right:0; top:-2px; bottom:-2px; width:1px; background:var(--border);}
+  #s1 .actions{display:flex; gap:14px;}
+  #s1 .btn{padding:15px 26px; font-size:14px;}
+  #s1 .foot{position:absolute; bottom:36px; left:52px; right:52px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); padding-top:16px; font-size:11.5px; color:var(--muted);}
+  #s1 .foot .left{display:flex; align-items:center; gap:8px;}
+
+  /* ================= SLIDE 2 : PRODUCT SUITE ================= */
+  .cards-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px;}
+  .pcard{border-radius:12px; border:1px solid var(--border); background:var(--card-light); padding:18px; cursor:pointer; position:relative; transition:all .25s ease; overflow:hidden;}
+  .pcard::before{content:''; position:absolute; top:0; left:0; right:0; height:4px; background:#FADBDC;}
+  .pcard.on{background:var(--navy); border-color:var(--coral); box-shadow:0 12px 28px rgba(0,0,0,.28);}
+  .pcard.on::before{background:var(--coral);}
+  .pcard .icobox{width:46px; height:46px; border-radius:11px; background:#fff; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin-bottom:14px;}
+  .pcard.on .icobox{background:var(--coral); border-color:var(--coral);}
+  .pcard .icobox svg{width:22px;height:22px; color:var(--navy);}
+  .pcard.on .icobox svg{color:#fff;}
+  .pcard .badge{position:absolute; top:18px; right:18px; background:#E6EBF2; color:#475569; font-size:9px; font-weight:700; padding:6px 10px; border-radius:14px; letter-spacing:.02em;}
+  .pcard.on .badge{background:var(--coral); color:#fff;}
+  .pcard h3{font-size:15px; font-weight:700; margin-bottom:8px; color:var(--navy); line-height:1.25; padding-right:70px;}
+  .pcard.on h3{color:#fff;}
+  .pcard p{font-size:10.8px; color:var(--muted); line-height:1.4; margin-bottom:16px; min-height:44px;}
+  .pcard.on p{color:#C7CEDB;}
+  .pcard .foot{display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); padding-top:10px; font-size:10.5px; font-weight:700; color:#94A3B8;}
+  .pcard.on .foot{border-color:#2A3752; color:var(--coral);}
+  .pcard .foot svg{width:14px;height:14px;}
+
+  .deepdive{background:var(--navy); border-radius:12px; padding:20px 26px; color:#fff; margin-bottom:16px; flex:1;}
+  .dd-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;}
+  .dd-label{color:var(--coral); font-weight:700; font-size:12px; letter-spacing:.04em;}
+  .dd-stat{background:#263049; color:#D6DCE8; font-size:11px; padding:8px 18px; border-radius:16px;}
+  .dd-items{display:grid; grid-template-columns:1fr 1fr; gap:12px 34px;}
+  .dd-item{display:flex; align-items:flex-start; gap:8px; font-size:11.5px; color:#fff;}
+  .dd-item svg{width:15px;height:15px; color:var(--coral); flex-shrink:0; margin-top:1px;}
+
+  .notice{background:var(--pink-badge); border:1px solid #FBD3D5; border-radius:10px; padding:14px 18px; display:flex; align-items:flex-start; gap:12px;}
+  .notice .icircle{width:32px;height:32px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .notice .icircle svg{width:16px;height:16px; color:#fff;}
+  .notice b{display:block; font-size:12.5px; color:var(--navy); margin-bottom:3px;}
+  .notice span{font-size:10px; color:var(--muted);}
+
+  /* ================= SLIDE 3 : MATCH ================= */
+  .match-table{border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:16px;}
+  .mt-head{background:var(--navy); color:#fff; display:grid; grid-template-columns:44% 56%; padding:13px 22px; font-size:11px; font-weight:700; letter-spacing:.05em;}
+  .mt-head span{display:flex; align-items:center; gap:8px;}
+  .mt-head svg{width:15px;height:15px; color:var(--coral);}
+  .mt-row{display:grid; grid-template-columns:44% 56%; align-items:center; padding:15px 22px; cursor:pointer; border-top:1px solid var(--border); transition:background .2s ease;}
+  .mt-row.checked{background:var(--pink-badge); border-left:4px solid var(--coral); padding-left:18px;}
+  .mt-row:nth-child(even):not(.checked){background:var(--card-light);}
+  .mt-left{display:flex; align-items:center; gap:14px;}
+  .checkbox{width:22px;height:22px;border-radius:6px;border:1.5px solid #CBD5E1; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .mt-row.checked .checkbox{background:var(--coral); border-color:var(--coral);}
+  .checkbox svg{width:14px;height:14px; color:#fff; display:none;}
+  .mt-row.checked .checkbox svg{display:block;}
+  .challenge-text{font-weight:700; font-size:13.5px; color:var(--navy);}
+  .mt-right{display:flex; align-items:center; gap:14px;}
+  .mt-right .icobox{width:38px;height:38px;border-radius:9px;background:var(--coral); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .mt-right .icobox svg{width:18px;height:18px; color:#fff;}
+  .sol-name{font-weight:700; font-size:12.5px; color:var(--coral-dark); margin-bottom:2px;}
+  .sol-detail{font-size:9.8px; color:var(--muted); line-height:1.3;}
+  .recommend{background:var(--navy); border-radius:10px; padding:16px 22px; display:flex; align-items:center; justify-content:space-between; color:#fff; flex-wrap:wrap; gap:10px;}
+  .recommend .rl b{color:var(--coral); font-size:10.5px; letter-spacing:.05em; display:block; margin-bottom:4px;}
+  .recommend .rl div{font-size:13px; color:#D6DCE8;}
+  .recommend .rl strong{color:#fff;}
+  .recommend .rr{background:#263049; color:#AAB4C6; font-size:9.5px; padding:8px 16px; border-radius:16px;}
+
+  /* ================= SLIDE 4 : PLANS ================= */
+  .plans-row{display:grid; grid-template-columns:1fr 1fr; gap:20px; flex:1;}
+  .plan{border-radius:12px; padding:26px 28px; position:relative; border:1px solid var(--border); background:var(--card-light);}
+  .plan.pop{background:var(--navy); border-color:var(--coral); box-shadow:0 14px 30px rgba(0,0,0,.28);}
+  .plan .pill{position:absolute; top:-16px; right:26px; background:var(--coral); color:#fff; font-size:10px; font-weight:700; padding:8px 16px; border-radius:14px; letter-spacing:.04em;}
+  .plan h2{font-size:24px; font-weight:800; letter-spacing:.02em; margin-bottom:8px; color:var(--navy);}
+  .plan.pop h2{color:#fff;}
+  .plan .ptag{font-style:italic; font-size:13.5px; color:var(--muted); margin-bottom:18px;}
+  .plan.pop .ptag{color:#C7CEDB;}
+  .plan hr{border:none; border-top:1px solid var(--border); margin-bottom:18px;}
+  .plan.pop hr{border-color:#2A3752;}
+  .plan ul{list-style:none;}
+  .plan li{display:flex; align-items:flex-start; gap:10px; font-size:13.5px; margin-bottom:14px; color:#334155;}
+  .plan.pop li{color:#fff;}
+  .plan li svg{width:16px;height:16px; color:var(--coral); flex-shrink:0; margin-top:2px;}
+  .plans-note{text-align:center; font-size:12px; font-style:italic; color:var(--muted); margin-top:18px;}
+
+  /* ================= SLIDE 5 : COMMISSION ================= */
+  .comm-row{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:18px;}
+  .comm-card{border-radius:12px; padding:24px 26px; border:1px solid var(--border); background:var(--card-light);}
+  .comm-card.dark{background:var(--navy); border-color:var(--coral); box-shadow:0 14px 30px rgba(0,0,0,.28); color:#fff;}
+  .comm-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .comm-eyebrow{font-size:10.5px; font-weight:700; letter-spacing:.05em; color:var(--muted);}
+  .comm-card.dark .comm-eyebrow{color:var(--coral);}
+  .comm-chip{background:var(--green-bg); color:var(--green-txt); font-size:8.5px; font-weight:700; padding:6px 12px; border-radius:12px;}
+  .comm-chip.dark{background:var(--coral); color:#fff;}
+  .comm-card h3{font-size:18px; font-weight:800; margin-bottom:14px; color:var(--navy);}
+  .comm-card.dark h3{color:#fff;}
+  .comm-card hr{border:none; border-top:1px solid var(--border); margin-bottom:16px;}
+  .comm-card.dark hr{border-color:#2A3752;}
+  .comm-pct{font-size:44px; font-weight:800; color:var(--coral);}
+  .comm-pct span{font-size:14px; color:var(--muted); font-weight:600;}
+  .comm-card.dark .comm-pct span{color:#C7CEDB;}
+  .comm-sub{font-size:11.5px; color:var(--muted); margin:10px 0 12px;}
+  .comm-card.dark .comm-sub{color:#C7CEDB;}
+  .comm-note{display:flex; align-items:center; gap:7px; font-size:10.5px; color:#334155;}
+  .comm-card.dark .comm-note{color:#fff;}
+  .comm-note svg{width:15px;height:15px; color:var(--coral);}
+
+  .sim{border-radius:12px; border:1px solid var(--border); background:var(--card-light); padding:18px 24px; display:flex; align-items:center; gap:22px;}
+  .sim .sicon{width:40px;height:40px;border-radius:10px;background:var(--coral);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sim .sicon svg{width:20px;height:20px;color:#fff;}
+  .sim .slabel{font-size:9px; font-weight:700; color:var(--muted); letter-spacing:.04em; margin-bottom:2px;}
+  .sim .stitle{font-size:14px; font-weight:700; color:var(--navy);}
+  .sim .sliderwrap{flex:1; padding:0 6px;}
+  input[type=range]{-webkit-appearance:none; width:100%; height:6px; border-radius:3px; background:linear-gradient(to right, var(--coral) 0%, var(--coral) var(--pct,20%), #CBD5E1 var(--pct,20%), #CBD5E1 100%); outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--coral); border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3); cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:var(--coral); border:3px solid #fff; cursor:pointer;}
+  .srange{display:flex; justify-content:space-between; font-size:9px; color:var(--muted); margin-top:6px;}
+  .sresults{display:flex; gap:10px;}
+  .sres{border:1px solid var(--border); border-radius:8px; padding:8px 16px; text-align:center; background:#fff;}
+  .sres .l{font-size:7px; font-weight:700; color:var(--muted); letter-spacing:.04em;}
+  .sres .v{font-size:14px; font-weight:800; color:var(--navy);}
+  .sres.save .v{color:var(--coral);}
+  .comm-note-full{text-align:center; font-size:11px; font-style:italic; color:var(--muted); margin-top:16px;}
+
+  /* ================= SLIDE 6 : CTA ================= */
+  #s6{justify-content:flex-start;}
+  .steps-row{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:22px;}
+  .step{background:var(--step-card); border:1px solid #2A3752; border-radius:12px; padding:20px;}
+  .step-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .step-num{width:36px;height:36px;border-radius:50%; background:var(--coral); color:#fff; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center;}
+  .step-ico{width:36px;height:36px;border-radius:9px; background:var(--step-icon); display:flex; align-items:center; justify-content:center;}
+  .step-ico svg{width:18px;height:18px; color:#fff;}
+  .step h4{font-size:16px; font-weight:700; margin-bottom:4px;}
+  .step .sub{color:var(--coral); font-weight:700; font-size:9px; letter-spacing:.05em; margin-bottom:10px;}
+  .step p{font-size:10.8px; color:#AAB4C6; line-height:1.4;}
+  .cta-banner{background:var(--coral); border-radius:14px; padding:26px; text-align:center; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .cta-banner h2{font-size:24px; font-weight:800; color:#fff; margin-bottom:8px;}
+  .cta-banner p{font-size:13px; color:#FFE3E4; margin-bottom:18px;}
+  .cta-banner .btn{background:var(--navy); color:#fff; padding:13px 26px; font-size:12.5px;}
+  .cta-foot{display:flex; align-items:center; justify-content:space-between; border-top:1px solid #263049; padding-top:14px; margin-top:18px; font-size:11px; color:#AAB4C6;}
+  .cta-foot b{color:#fff; font-size:13px;}
+
+  @media (max-width:900px){
+    .cards-row{grid-template-columns:repeat(2,1fr);}
+    .dd-items{grid-template-columns:1fr;}
+    .plans-row, .comm-row, .steps-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+ <div id="stageWrap">
+  <div id="stage">
+
+    <!-- SLIDE 1 — COVER -->
+    <section class="slide active" id="s1">
+      <div class="brand"><div class="mark">MT</div><div class="name">MyTravaly<sup>TM</sup></div></div>
+      <div class="top-pill">HOTEL SOLUTIONS ECOSYSTEM</div>
+      <div class="tag">✦ Simplify. Sell. Grow.</div>
+      <h1>One connected ecosystem<br>for your hotel</h1>
+      <p class="lede">Streamline operations, maximize direct revenue, and synchronize channels with ease.</p>
+      <div class="capsule">
+        <span>Manage</span><span>Sell</span><span>Distribute</span>
+      </div>
+      <div class="actions">
+        <button class="btn btn-coral" onclick="go(1)">Explore Presentation
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+        <button class="btn btn-outline" onclick="go(5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 4v16"/></svg>
+          Schedule Hotel Demo
+        </button>
+      </div>
+      <div class="foot">
+        <div class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF5A5F" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+          Modular &amp; Custom Built for Hoteliers
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2 — PRODUCT SUITE -->
+    <section class="slide" id="s2">
+      <div class="brand"><div class="mark">MT</div><div class="name">MyTravaly<sup>TM</sup></div></div>
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        PRODUCT SUITE OVERVIEW
+      </div>
+      <h1 class="title">What can MyTravaly do for your hotel?</h1>
+      <p class="subtitle">One platform. Multiple solutions. Click a card to inspect.</p>
+      <div class="divider"></div>
+
+      <div class="cards-row" id="pcards"></div>
+      <div class="deepdive" id="deepdive"></div>
+      <div class="notice">
+        <div class="icircle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V5l-8-3Z"/></svg></div>
+        <div><b>Choose what your hotel needs. You don't have to take everything.</b><span>Modular architecture ensures you only pay for the solutions that deliver immediate value.</span></div>
+      </div>
+      <div class="slide-counter">Slide 2 of 6</div>
+    </section>
+
+    <!-- SLIDE 3 — MATCH -->
+    <section class="slide" id="s3">
+      <div class="brand"><div class="mark">MT</div><div class="name">MyTravaly<sup>TM</sup></div></div>
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 4 2.8c-.7.3-1.1 1-1.1 1.7v.3M12 17h.01"/></svg>
+        CONSULTATIVE ASSESSMENT
+      </div>
+      <h1 class="title">Match the solution to the problem</h1>
+      <p class="subtitle">What challenge are you facing? Tap a row to toggle it.</p>
+      <div class="divider"></div>
+
+      <div class="match-table">
+        <div class="mt-head">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>YOUR CHALLENGE</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10-3-3"/></svg>MYTRAVALY SOLUTION</span>
+        </div>
+        <div id="mtrows"></div>
+      </div>
+      <div class="recommend">
+        <div class="rl"><b>CONSULTATIVE RECOMMENDATION</b><div>Recommended Stack for your needs: <strong id="recStack">—</strong></div></div>
+        <div class="rr">Tap rows to toggle challenges</div>
+      </div>
+      <div class="slide-counter">Slide 3 of 6</div>
+    </section>
+
+    <!-- SLIDE 4 — PLANS -->
+    <section class="slide" id="s4">
+      <div class="brand"><div class="mark">MT</div><div class="name">MyTravaly<sup>TM</sup></div></div>
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        SUBSCRIPTION TIERS
+      </div>
+      <h1 class="title">Plans designed around your property</h1>
+      <p class="subtitle">Choose the tier that matches where your hotel is today.</p>
+      <div class="divider"></div>
+
+      <div class="plans-row">
+        <div class="plan">
+          <h2>STARTER</h2>
+          <p class="ptag">A strong operational foundation</p>
+          <hr>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Property Management System (PMS)</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Booking Engine</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Housekeeping Management</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Custom Domain</li>
+          </ul>
+        </div>
+        <div class="plan pop">
+          <div class="pill">MOST POPULAR</div>
+          <h2>GROWTH</h2>
+          <p class="ptag">Starter + Channel Manager</p>
+          <hr>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Everything in Starter</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Channel Manager</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Centralized OTA distribution</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>Rate &amp; inventory synchronization</li>
+          </ul>
+        </div>
+      </div>
+      <p class="plans-note">Pricing depends on room count and subscription duration. We'll recommend the most suitable plan for your property.</p>
+      <div class="slide-counter">Slide 4 of 6</div>
+    </section>
+
+    <!-- SLIDE 5 — COMMISSION -->
+    <section class="slide" id="s5">
+      <div class="brand"><div class="mark">MT</div><div class="name">MyTravaly<sup>TM</sup></div></div>
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5 5 19M6.5 6.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0ZM14.5 14.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z"/></svg>
+        TRANSPARENT PRICING MODEL
+      </div>
+      <h1 class="title">Simple &amp; transparent commercial model</h1>
+      <p class="subtitle">Clear commission structure built for mutual growth.</p>
+      <div class="divider"></div>
+
+      <div class="comm-row">
+        <div class="comm-card">
+          <div class="comm-top"><span class="comm-eyebrow">MYTRAVALY OTA</span><span class="comm-chip">FREE LISTING</span></div>
+          <h3>MyTravaly OTA Channel</h3>
+          <hr>
+          <div class="comm-pct">20%<span>&nbsp;commission</span></div>
+          <div class="comm-sub">On bookings generated through MyTravaly OTA.</div>
+          <div class="comm-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="margin-right:2px;vertical-align:-3px"><path d="M22 11.08V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10-3-3"/></svg>Zero upfront listing fees. Pay strictly on performance.</div>
+        </div>
+        <div class="comm-card dark">
+          <div class="comm-top"><span class="comm-eyebrow">BOOKING ENGINE / STAYCONFIRM</span><span class="comm-chip dark">DIRECT SAVINGS</span></div>
+          <h3>Direct Booking Engine</h3>
+          <hr>
+          <div class="comm-pct">8%<span>&nbsp;commission</span></div>
+          <div class="comm-sub">On bookings generated through the Booking Engine.</div>
+          <div class="comm-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="margin-right:2px;vertical-align:-3px"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Keep up to 12% more profit on every direct guest booking.</div>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div>
+        <div>
+          <div class="slabel">DIRECT CHANNEL MARGIN SIMULATOR</div>
+          <div class="stitle">Monthly Booking Revenue</div>
+        </div>
+        <div class="sliderwrap">
+          <input type="range" id="revSlider" min="2000" max="50000" step="500" value="10000">
+          <div class="srange"><span>₹2,000</span><span>₹50,000</span></div>
+        </div>
+        <div class="sresults">
+          <div class="sres"><div class="l">REVENUE</div><div class="v" id="revOut">₹10,000</div></div>
+          <div class="sres save"><div class="l">MONTHLY SAVINGS</div><div class="v" id="saveOut">+₹1,200</div></div>
+        </div>
+      </div>
+      <p class="comm-note-full">Subscription and booking-based commissions are separate commercial components. Applicable settlement terms depend on the selected plan.</p>
+      <div class="slide-counter">Slide 5 of 6</div>
+    </section>
+
+    <!-- SLIDE 6 — CTA -->
+    <section class="slide dark" id="s6">
+      <div class="brand"><div class="mark">MT</div><div class="name">MyTravaly<sup>TM</sup></div></div>
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
+        NEXT STEPS
+      </div>
+      <h1 class="title">Let's find the right solution for your hotel.</h1>
+      <p class="subtitle">A quick, zero-friction consultation built around your property goals.</p>
+      <div class="divider"></div>
+
+      <div class="steps-row">
+        <div class="step">
+          <div class="step-top"><div class="step-num">1</div><div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div></div>
+          <h4>Understand</h4>
+          <div class="sub">YOUR CURRENT SETUP</div>
+          <p>We audit your existing operational workflow and OTA channel setup.</p>
+        </div>
+        <div class="step">
+          <div class="step-top"><div class="step-num">2</div><div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div></div>
+          <h4>Identify</h4>
+          <div class="sub">YOUR CHALLENGES</div>
+          <p>Pinpoint double booking risks, manual labor leaks, or high OTA commissions.</p>
+        </div>
+        <div class="step">
+          <div class="step-top"><div class="step-num">3</div><div class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg></div></div>
+          <h4>Demonstrate</h4>
+          <div class="sub">THE RELEVANT MYTRAVALY SOLUTION</div>
+          <p>Custom live demonstration tailored specifically to your property size.</p>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h2>Book a Short Demo</h2>
+        <p>See how MyTravaly can simplify your hotel's operations, bookings and distribution.</p>
+        <button class="btn" onclick="window.open('https://forms.gle/Y2s5guUt3Q5HArUg7', '_blank')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Schedule 15-Min Demo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="14" height="14"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="cta-foot">
+        <b>MyTravaly&trade;</b>
+        <span>Manage Better. Sell Direct. Reach More Guests.</span>
+      </div>
+      <div class="slide-counter">Slide 6 of 6</div>
+    </section>
+
+  </div>
+ </div>
+
+  <div id="navbar">
+    <div class="navbtn" onclick="go(current-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <div id="dots"></div>
+    <div class="navbtn" onclick="go(current+1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></div>
+  </div>
+  <div class="hint">Use ← → arrow keys to navigate</div>
+</div>
+
+<script>
+function ck(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" style="margin-right:8px;vertical-align:-3px"><path d="M20 6 9 17l-5-5"/></svg>';}
+function okico(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="margin-right:2px;vertical-align:-3px"><path d="M22 11.08V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10-3-3"/></svg>';}
+function upico(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="margin-right:2px;vertical-align:-3px"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>';}
+
+const ICONS = {
+  pms: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  booking: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg>',
+  channel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+  housekeeping: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M18.4 5.6 15.5 8.5M5.6 5.6l2.9 2.9M12 12l7 7M5 21l4-4"/></svg>'
+};
+
+const PRODUCTS = [
+  {key:'pms', title:'PMS', badge:'CORE OPERATIONS', desc:'Manage reservations, rooms, guests, check-in/out, billing & operations.',
+   dd:{label:'DEEP-DIVE: PROPERTY MANAGEMENT SYSTEM', stat:'Save 15+ hours/week on front desk tasks',
+       items:['Interactive front-desk calendar view','Automated guest invoicing & folio billing','Instant check-in/check-out workflow','Guest profile & history tracking']}},
+  {key:'booking', title:'Booking Engine / StayConfirm', badge:'0% OTA FEE POTENTIAL', desc:'Enable direct bookings and build your direct booking channel.',
+   dd:{label:'DEEP-DIVE: DIRECT REVENUE ENGINE', stat:'Increase direct revenue by up to 35%',
+       items:['Commission-free direct website bookings','StayConfirm instant WhatsApp/email voucher','Multi-currency & integrated payment gateways','Mobile-optimized guest checkout']}},
+  {key:'channel', title:'Channel Manager', badge:'ZERO OVERBOOKINGS', desc:'Synchronize availability, rates & inventory across booking channels.',
+   dd:{label:'DEEP-DIVE: OTA DISTRIBUTION SYNC', stat:'Sync rates & availability in real time',
+       items:['2-way instant sync across 100+ OTAs','Centralized rate plan & package updates','Pooled inventory management','Automated price parity alerts']}},
+  {key:'housekeeping', title:'Housekeeping', badge:'FASTER TURNAROUND', desc:'Manage room status and housekeeping operations.',
+   dd:{label:'DEEP-DIVE: ROOM OPERATIONS & STATUS', stat:'Cut room turnaround time by 25%',
+       items:['Live room cleaning status (Clean/Dirty/In-Progress)','Staff task allocation & priority flags','Maintenance issue tracking with photo logs','Automatic front-desk status updates']}}
+];
+let activeProduct = 'pms';
+
+function renderProducts(){
+  const row = document.getElementById('pcards');
+  row.innerHTML = PRODUCTS.map(p => `
+    <div class="pcard ${p.key===activeProduct?'on':''}" onclick="setProduct('${p.key}')">
+      <div class="icobox">${ICONS[p.key]}</div>
+      <div class="badge">${p.badge}</div>
+      <h3>${p.title}</h3>
+      <p>${p.desc}</p>
+      <div class="foot">Click to inspect
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>`).join('');
+  const active = PRODUCTS.find(p=>p.key===activeProduct);
+  document.getElementById('deepdive').innerHTML = `
+    <div class="dd-head">
+      <div class="dd-label">${active.dd.label}</div>
+      <div class="dd-stat">${active.dd.stat}</div>
+    </div>
+    <div class="dd-items">
+      ${active.dd.items.map(it=>`<div class="dd-item">${ck()}${it}</div>`).join('')}
+    </div>`;
+}
+function setProduct(key){ activeProduct = key; renderProducts(); }
+
+const ROWS = [
+  {challenge:'Managing hotel operations manually', solution:'PMS', detail:'Automates reservations, front desk, folios, billing & guest communication.', icon:'pms', checked:true},
+  {challenge:'Updating multiple OTAs separately', solution:'Channel Manager', detail:'Instant 2-way real-time rate & inventory synchronization across OTAs.', icon:'channel', checked:true},
+  {challenge:'Want more direct bookings', solution:'Booking Engine', detail:'Embeds direct commission-free booking widget with StayConfirm vouchers.', icon:'booking', checked:false},
+  {challenge:'Difficulty managing room status', solution:'Housekeeping', detail:'Live room cleaning status tracking, staff task allocation & mobile updates.', icon:'housekeeping', checked:false}
+];
+function renderRows(){
+  const c = document.getElementById('mtrows');
+  c.innerHTML = ROWS.map((r,i)=>`
+    <div class="mt-row ${r.checked?'checked':''}" onclick="toggleRow(${i})">
+      <div class="mt-left">
+        <div class="checkbox">${ck()}</div>
+        <div class="challenge-text">${r.challenge}</div>
+      </div>
+      <div class="mt-right">
+        <div class="icobox">${ICONS[r.icon]}</div>
+        <div><div class="sol-name">${r.solution}</div><div class="sol-detail">${r.detail}</div></div>
+      </div>
+    </div>`).join('');
+  const chosen = ROWS.filter(r=>r.checked).map(r=>r.solution);
+  document.getElementById('recStack').textContent = chosen.length ? chosen.join(' + ') : 'Select a challenge to see recommendations';
+}
+function toggleRow(i){ ROWS[i].checked = !ROWS[i].checked; renderRows(); }
+
+const slider = document.getElementById('revSlider');
+function updateSim(){
+  const rev = parseInt(slider.value,10);
+  const pct = ((rev-2000)/(50000-2000))*100;
+  slider.style.setProperty('--pct', pct+'%');
+  document.getElementById('revOut').textContent = '₹'+rev.toLocaleString('en-IN');
+  const savings = Math.round(rev*0.12);
+  document.getElementById('saveOut').textContent = '+₹'+savings.toLocaleString('en-IN');
+}
+slider.addEventListener('input', updateSim);
+
+renderProducts();
+renderRows();
+updateSim();
+
+/* ---------------- deck navigation ---------------- */
+const slides = document.querySelectorAll('.slide');
+const TOTAL = slides.length;
+let current = 0;
+const dotsEl = document.getElementById('dots');
+dotsEl.innerHTML = Array.from({length:TOTAL}).map((_,i)=>`<div class="dot ${i===0?'on':''}" onclick="go(${i})"></div>`).join('');
+
+function go(i){
+  if(i<0||i>=TOTAL) return;
+  slides[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,idx)=>d.classList.toggle('on', idx===current));
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') go(current+1);
+  if(e.key==='ArrowLeft') go(current-1);
+});
+
+/* ---------------- responsive scaling stage ---------------- */
+function fit(){
+  const stage = document.getElementById('stage');
+  const wrap = document.getElementById('stageWrap');
+  const padX = 40;
+  const reserved = 110; // space for navbar + hint + gaps
+  const scale = Math.min((window.innerWidth-padX)/1280, (window.innerHeight-reserved)/720, 1.15);
+  stage.style.transform = `scale(${scale})`;
+  wrap.style.width = (1280*scale)+'px';
+  wrap.style.height = (720*scale)+'px';
+}
+window.addEventListener('resize', fit);
+fit();
+</script>
+</body>
+</html>
